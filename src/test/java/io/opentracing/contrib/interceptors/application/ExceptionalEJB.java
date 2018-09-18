@@ -14,8 +14,4 @@ public class ExceptionalEJB {
     public void throwRuntimeException() throws RuntimeException {
         throw new RuntimeException("this is expected to happen");
     }
-
-    public void throwError() throws Error {
-        throw new Error("this is expected to happen");
-    }
 }

@@ -90,13 +90,9 @@ public class OpenTracingInterceptor {
             }
 
             return ctx.proceed();
-        } catch (Throwable t) {
-            logException(scope.span(), t);
-            if (t instanceof Exception) {
-                throw (Exception) t;
-            } else {
-                throw new Exception(t);
-            }
+        } catch (Exception e) {
+            logException(scope.span(), e);
+            throw e;
         } finally {
             scope.close();
         }
@@ -135,10 +131,10 @@ public class OpenTracingInterceptor {
         return String.format("%s.%s", method.getDeclaringClass().getName(), method.getName());
     }
 
-    private void logException(Span span, Throwable t) {
+    private void logException(Span span, Exception e) {
         Map<String, Object> errorLogs = new HashMap<String, Object>(2);
         errorLogs.put("event", Tags.ERROR.getKey());
-        errorLogs.put("error.object", t);
+        errorLogs.put("error.object", e);
         span.log(errorLogs);
         Tags.ERROR.set(span, true);
     }

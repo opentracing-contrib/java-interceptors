@@ -197,22 +197,6 @@ public class EjbDeploymentTestCase {
         assertSpanHasErrorFor(mockTracer.finishedSpans().get(0), throwed.getCause());
     }
 
-    @Test
-    public void runtimeErrorIsLogged() {
-        MockTracer mockTracer = (MockTracer) tracer;
-        Throwable throwed = null;
-
-        try {
-            exceptionalEJB.throwError();
-        } catch (Throwable t) {
-            throwed = t;
-        }
-        Assert.assertEquals(1, mockTracer.finishedSpans().size());
-        Assert.assertNotNull(throwed);
-
-        assertSpanHasErrorFor(mockTracer.finishedSpans().get(0), throwed);
-    }
-
     private void assertSpanHasErrorFor(MockSpan span, Throwable throwed) {
         Assert.assertTrue((Boolean) span.tags().get("error"));
 
