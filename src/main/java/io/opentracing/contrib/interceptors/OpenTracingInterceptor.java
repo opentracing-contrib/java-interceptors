@@ -72,9 +72,8 @@ public class OpenTracingInterceptor {
         }
 
         Span span = spanBuilder.start();
-        Scope scope = null;
+        Scope scope = tracer.activateSpan(span);
         try {
-            scope = tracer.activateSpan(span);
             log.fine("Adding span context into the invocation context.");
             ctx.getContextData().put(SPAN_CONTEXT, span.context());
 
@@ -97,9 +96,7 @@ public class OpenTracingInterceptor {
             throw e;
         } finally {
             span.finish();
-            if(scope != null) {
-                scope.close();
-            }
+            scope.close();
         }
     }
 
