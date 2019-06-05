@@ -1,6 +1,13 @@
 package io.opentracing.contrib.interceptors;
 
+import javax.inject.Inject;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.interceptors.application.AsyncEJB;
 import io.opentracing.contrib.interceptors.application.CustomOperationNameOnClass;
@@ -22,12 +29,6 @@ import org.apache.openejb.testing.Module;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.inject.Inject;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 @RunWith(ApplicationComposer.class)
 public class EjbDeploymentTestCase {
@@ -95,11 +96,16 @@ public class EjbDeploymentTestCase {
         MockTracer mockTracer = (MockTracer) tracer;
 
         Assert.assertEquals(0, mockTracer.finishedSpans().size());
-        Scope scope = tracer.buildSpan("spanIsIntercepted").startActive(true);
+        Span span = tracer.buildSpan("spanIsIntercepted").start();
+        Scope scope = null;
         try {
-            interceptedEJB.withSpanReadyToUse(scope.span());
+            scope = tracer.activateSpan(span);
+            interceptedEJB.withSpanReadyToUse(span);
         } finally {
-            scope.close();
+            span.finish();
+            if (scope != null) {
+                scope.close();
+            }
         }
         Assert.assertEquals(2, mockTracer.finishedSpans().size());
         assertSameTrace(mockTracer.finishedSpans());
