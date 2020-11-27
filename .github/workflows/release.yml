@@ -1,18 +1,14 @@
-name: Release
-
+name: Publish package to the Maven Central Repository and GitHub Packages
 on:
-  push:
-    tags:
-      - "release/**"
-
+  release:
+    types: [created]
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up JDK 1.8
+      - name: Set up Java
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
@@ -20,10 +16,11 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build with Gradle
-        run: ./gradlew ciPerformRelease
+      - name: Publish to the Maven Central Repository
+        run: ./gradlew publish
         env:
-          BINTRAY_API_KEY: ${{ secrets.BINTRAY_API_KEY }}
-          BINTRAY_API_USER: ${{ secrets.BINTRAY_API_USER }}
-          GH_READ_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_WRITE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.OSSRH_USERNAME }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.OSSRH_TOKEN }}
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_ARMORED_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
